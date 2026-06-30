@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Obra – Ana Diniz</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f2f2f0;color:#1a1a1a;min-height:100vh;font-size:16px}
+
+/* HEADER */
+.header{background:#1a1a1a;color:#fff;padding:20px 16px 16px}
+.header h1{font-size:22px;font-weight:600;line-height:1.2}
+.header .sub{font-size:14px;color:#aaa;margin-top:6px;line-height:1.4}
+.header .periodo{display:inline-block;margin-top:10px;background:#2e2e2e;border-radius:20px;padding:5px 14px;font-size:13px;color:#ccc}
+
+/* NAV */
+.nav{background:#fff;border-bottom:1px solid #e0e0e0;display:flex}
+.nav-btn{flex:1;border:none;background:none;padding:16px 8px;font-size:16px;font-weight:500;color:#888;cursor:pointer;border-bottom:3px solid transparent}
+.nav-btn.active{color:#1a1a1a;border-bottom-color:#1a1a1a}
+.tab{display:none}.tab.active{display:block}
+
+/* RESUMO */
+.resumo{background:#fff;border-bottom:1px solid #e0e0e0;padding:16px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{text-align:center;padding:10px 4px;background:#f8f8f8;border-radius:10px}
+.stat-val{font-size:28px;font-weight:700;line-height:1}
+.stat-lbl{font-size:11px;color:#888;margin-top:4px;text-transform:uppercase;letter-spacing:.4px}
+.done-val{color:#1a7a4a}.prog-val{color:#c06000}.wait-val{color:#aaa}
+
+/* BARRA PROGRESSO */
+.barra-wrap{background:#fff;padding:14px 16px;border-bottom:1px solid #e0e0e0}
+.barra-topo{display:flex;justify-content:space-between;font-size:14px;color:#555;margin-bottom:8px;font-weight:500}
+.barra-track{height:8px;background:#e8e8e8;border-radius:4px;overflow:hidden}
+.barra-fill{height:100%;background:#1a7a4a;border-radius:4px;transition:width .6s}
+
+/* FILTROS */
+.filtros{background:#f8f8f8;padding:12px 16px;border-bottom:1px solid #e0e0e0;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.filtros::-webkit-scrollbar{display:none}
+.fbtn{border:1.5px solid #d0d0d0;background:#fff;border-radius:20px;padding:8px 16px;font-size:14px;cursor:pointer;color:#555;white-space:nowrap;font-weight:500}
+.fbtn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+/* ÁREA TÍTULO */
+.area-titulo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;padding:20px 16px 8px;display:flex;align-items:center;gap:8px}
+.area-titulo::after{content:'';flex:1;height:1px;background:#e0e0e0}
+
+/* CARD TAREFA */
+.card{background:#fff;border-radius:14px;padding:16px;margin:0 16px 10px;border:1px solid #e8e8e8}
+.card.done{opacity:.55}
+.card.hidden{display:none}
+.card-topo{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.status-icone{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.icone-done{background:#e6f4ec}
+.icone-prog{background:#fff4e6}
+.icone-wait{background:#f0f0f0}
+.icone-ext{background:#ebebf8}
+.card-info{flex:1;min-width:0}
+.card-nome{font-size:17px;font-weight:600;line-height:1.3;color:#1a1a1a;margin-bottom:4px}
+.card-status{font-size:14px;font-weight:600}
+.status-done{color:#1a7a4a}.status-prog{color:#c06000}.status-wait{color:#999}.status-ext{color:#5a5a9a}
+.card-datas{font-size:14px;color:#777;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.card-obs{background:#fffbec;border-left:3px solid #f0c040;padding:8px 12px;border-radius:0 8px 8px 0;font-size:14px;color:#7a5500;margin-bottom:10px;line-height:1.4}
+.prog-linha{background:#f0f0f0;border-radius:4px;height:6px;overflow:hidden;margin-bottom:6px}
+.prog-linha-fill{height:100%;border-radius:4px}
+.prog-pct{font-size:13px;color:#aaa}
+
+/* GANTT — simplificado, scroll horizontal */
+.gantt-section{padding:0 0 24px}
+.gantt-titulo{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#888;padding:20px 16px 10px;display:flex;align-items:center;gap:8px}
+.gantt-titulo::after{content:'';flex:1;height:1px;background:#e0e0e0}
+.gantt-scroll{overflow-x:auto;padding:0 16px 8px;-webkit-overflow-scrolling:touch}
+.gantt-scroll::-webkit-scrollbar{height:4px}.gantt-scroll::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+.gantt-inner{min-width:600px}
+.gantt-mes-row{display:flex;padding-left:140px;margin-bottom:4px}
+.gantt-mes{font-size:12px;font-weight:700;color:#888;text-align:center}
+.gantt-dia-row{display:flex;padding-left:140px;margin-bottom:6px}
+.gantt-dia{flex:1;text-align:center;font-size:10px;color:#bbb;font-weight:500}
+.gantt-dia.hoje{color:#c06000;font-weight:800}
+.gantt-task-row{display:flex;align-items:center;margin-bottom:3px}
+.gantt-task-lbl{width:140px;flex-shrink:0;font-size:11px;color:#555;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gantt-cells{display:flex;flex:1;gap:1px}
+.gcell{flex:1;height:12px;border-radius:2px;background:#ebebeb}
+.gcell.g-done{background:#1a7a4a}.gcell.g-prog{background:#e07800}.gcell.g-wait{background:#b8ccee}.gcell.g-ext{background:#9090c8}
+.gcell.g-hoje{outline:2px solid #e07800;outline-offset:-1px}
+.gantt-area-sep{display:flex;padding-left:140px;margin:6px 0 4px}
+.gantt-area-sep-line{flex:1;height:1px;background:#e8e8e8}
+.legenda{display:flex;gap:16px;flex-wrap:wrap;padding:8px 16px 20px}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:13px;color:#666}
+.leg-dot{width:10px;height:10px;border-radius:50%}
+
+/* CUSTOS */
+.custos-wrap{padding:16px}
+.custos-topo{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.custos-topo h2{font-size:20px;font-weight:700}
+.btn-lancar{background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.form-custo{background:#fff;border-radius:14px;padding:16px;margin-bottom:16px;display:none;border:1px solid #e0e0e0}
+.form-custo.open{display:block}
+.campo{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+.campo label{font-size:13px;font-weight:600;color:#555;text-transform:uppercase;letter-spacing:.4px}
+.campo input,.campo select,.campo textarea{border:1.5px solid #d5d5d5;border-radius:10px;padding:12px;font-size:16px;font-family:inherit;width:100%;background:#fff;color:#1a1a1a}
+.campo textarea{min-height:70px;resize:vertical}
+.form-btns{display:flex;gap:10px;margin-top:4px}
+.btn-salvar{background:#1a1a1a;color:#fff;border:none;border-radius:10px;padding:12px 20px;font-size:16px;font-weight:600;cursor:pointer;flex:1}
+.btn-cancelar{background:#f0f0f0;color:#555;border:none;border-radius:10px;padding:12px 16px;font-size:16px;cursor:pointer}
+.custo-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+.custo-card{background:#fff;border-radius:14px;padding:14px;border:1px solid #e8e8e8;text-align:center}
+.custo-card-val{font-size:20px;font-weight:700;margin-bottom:4px}
+.custo-card-lbl{font-size:12px;color:#888}
+.custo-item{background:#fff;border-radius:14px;padding:16px;margin-bottom:10px;border:1px solid #e8e8e8}
+.custo-item-topo{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px}
+.custo-item-desc{font-size:16px;font-weight:600;line-height:1.3;flex:1}
+.custo-item-val{font-size:17px;font-weight:700;white-space:nowrap}
+.custo-item-meta{font-size:13px;color:#888;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.custo-badge{font-size:12px;border-radius:6px;padding:3px 8px;font-weight:600}
+.btn-del{border:none;background:none;color:#ccc;font-size:20px;cursor:pointer;padding:2px 4px;line-height:1}
+.vazio{text-align:center;padding:48px 16px;color:#bbb;font-size:16px}
+
+/* WHATSAPP */
+.wabtn-wrap{padding:16px;text-align:center;background:#fff;border-top:1px solid #e0e0e0}
+.wabtn{display:inline-flex;align-items:center;gap:10px;background:#25D366;color:#fff;text-decoration:none;border-radius:14px;padding:14px 28px;font-size:17px;font-weight:700;width:100%;justify-content:center}
+
+/* FOOTER */
+.footer{padding:14px 16px;font-size:12px;color:#bbb;text-align:center;background:#f2f2f0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Acompanhamento de Obra</h1>
+  <div class="sub">Rua Barão de Capanema, 74 – Apartamento 14<br>Resp. Técnico: Camila Teixeira · CREA 5063856030</div>
+  <span class="periodo">12 jun – 03 jul 2026</span>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showTab('cronograma',this)">📋 Serviços</button>
+  <button class="nav-btn" onclick="showTab('custos',this)">💰 Custos</button>
+</div>
+
+<!-- TAB CRONOGRAMA -->
+<div class="tab active" id="tab-cronograma">
+
+  <div class="resumo">
+    <div class="stat"><div class="stat-val" id="total-t">22</div><div class="stat-lbl">Total</div></div>
+    <div class="stat"><div class="stat-val done-val" id="done-t">0</div><div class="stat-lbl">✅ Feitos</div></div>
+    <div class="stat"><div class="stat-val prog-val" id="prog-t">0</div><div class="stat-lbl">🔄 Andamento</div></div>
+    <div class="stat"><div class="stat-val wait-val" id="wait-t">22</div><div class="stat-lbl">⏳ Falta</div></div>
+  </div>
+
+  <div class="barra-wrap">
+    <div class="barra-topo"><span>Progresso geral</span><span id="pct-txt" style="font-weight:700">0%</span></div>
+    <div class="barra-track"><div class="barra-fill" id="barra" style="width:0%"></div></div>
+  </div>
+
+  <div class="filtros">
+    <button class="fbtn active" onclick="filtrar('all',this)">Todos</button>
+    <button class="fbtn" onclick="filtrar('prog',this)">🔄 Em andamento</button>
+    <button class="fbtn" onclick="filtrar('wait',this)">⏳ Aguardando</button>
+    <button class="fbtn" onclick="filtrar('done',this)">✅ Concluídos</button>
+    <button class="fbtn" onclick="filtrar('ext',this)">🔧 Externos</button>
+  </div>
+
+  <div id="cards-wrap"></div>
+
+  <div class="gantt-section">
+    <div class="gantt-titulo">Cronograma visual</div>
+    <div class="gantt-scroll"><div class="gantt-inner" id="gantt"></div></div>
+    <div class="legenda">
+      <div class="leg-item"><div class="leg-dot" style="background:#1a7a4a"></div>Concluído</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#e07800"></div>Em andamento</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#b8ccee"></div>Aguardando</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#9090c8"></div>Externo</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TAB CUSTOS -->
+<div class="tab" id="tab-custos">
+  <div class="custos-wrap">
+    <div class="custos-topo">
+      <h2>Custos</h2>
+      <button class="btn-lancar" onclick="toggleForm()">+ Lançar</button>
+    </div>
+
+    <div class="form-custo" id="form-custo">
+      <div class="campo"><label>Descrição</label><textarea id="f-desc" placeholder="Ex: Tinta, mão de obra..."></textarea></div>
+      <div class="campo"><label>Valor (R$)</label><input type="number" id="f-val" placeholder="0,00" step="0.01" min="0" inputmode="decimal"></div>
+      <div class="campo"><label>Categoria</label>
+        <select id="f-cat">
+          <option value="material">Material</option>
+          <option value="mao-de-obra">Mão de obra</option>
+          <option value="aluguel">Aluguel / Equipamento</option>
+          <option value="externo">Serviço externo</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div class="campo"><label>Área</label>
+        <select id="f-area">
+          <option value="Banho Master">Banho Master</option>
+          <option value="Sala de Estar">Sala de Estar</option>
+          <option value="Cobertura SPA">Cobertura SPA</option>
+          <option value="Deck / SPA">Deck / SPA</option>
+          <option value="Terraço">Terraço</option>
+          <option value="Sala de Jantar">Sala de Jantar</option>
+          <option value="Automação">Automação</option>
+          <option value="Jacuzzi">Jacuzzi</option>
+          <option value="Maçanetas">Maçanetas</option>
+          <option value="Escada de Emergência">Escada de Emergência</option>
+          <option value="Lavanderia">Lavanderia</option>
+          <option value="Geral">Geral</option>
+        </select>
+      </div>
+      <div class="campo"><label>Data</label><input type="date" id="f-data" value="2026-06-12"></div>
+      <div class="campo"><label>Referência / NF</label><input type="text" id="f-ref" placeholder="Opcional"></div>
+      <div class="form-btns">
+        <button class="btn-cancelar" onclick="toggleForm()">Cancelar</button>
+        <button class="btn-salvar" onclick="salvarCusto()">Salvar</button>
+      </div>
+    </div>
+
+    <div class="custo-cards">
+      <div class="custo-card" style="grid-column:1/-1"><div class="custo-card-val" id="cs-total">R$ 0,00</div><div class="custo-card-lbl">Total gasto</div></div>
+      <div class="custo-card"><div class="custo-card-val" style="color:#1a5a9a" id="cs-mat">R$ 0,00</div><div class="custo-card-lbl">Materiais</div></div>
+      <div class="custo-card"><div class="custo-card-val" style="color:#1a7a4a" id="cs-mao">R$ 0,00</div><div class="custo-card-lbl">Mão de obra</div></div>
+    </div>
+
+    <div id="custo-lista"></div>
+  </div>
+</div>
+
+<div class="wabtn-wrap">
+  <a href="https://wa.me/5511998411369?text=Ol%C3%A1%20Camila%2C%20estou%20acompanhando%20o%20painel%20da%20obra%20e%20tenho%20uma%20d%C3%BAvida!" target="_blank" class="wabtn">
+    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+    Falar com a Camila
+  </a>
+</div>
+
+<div class="footer" id="footer-data">Carregando...</div>
+
+<script>
+const tasks=[
+  {id:1, area:"Banho Master",  name:"Proteção do Banho Master",                  start:"2026-06-15",end:"2026-06-15",type:"done_override",obs:"Concluído"},
+  {id:2, area:"Banho Master",  name:"Abertura de forro",                          start:"2026-06-15",end:"2026-06-15",type:"cancelado",obs:"Cancelado"},
+  {id:3, area:"Banho Master",  name:"Instalação de pressurização dos chuveiros",  start:"2026-06-16",end:"2026-06-17",type:"cancelado",obs:"Cancelado"},
+  {id:4, area:"Banho Master",  name:"Teste da pressurização",                     start:"2026-06-18",end:"2026-06-22",type:"done_override",obs:"Concluído"},
+  {id:5, area:"Banho Master",  name:"Troca de anel de vedação – bacia sanitária", start:"2026-06-23",end:"2026-06-23",type:"done_override",obs:"Concluído"},
+  
+  {id:27,area:"Banho Master",  name:"Troca dos 2 chuveiros",                         start:"2026-06-18",end:"2026-06-18",type:"done_override",obs:"Concluído"},
+  {id:28,area:"Banho Master",  name:"Adequação do monocomando do chuveiro",           start:"2026-06-18",end:"2026-06-18",type:"done_override",obs:"Concluído"},
+  {id:6, area:"Banho Master",  name:"Fechamento de forro",                        start:"2026-06-24",end:"2026-06-25",type:"cancelado",obs:"Cancelado"},
+  {id:7, area:"Banho Master",  name:"Pintura de forro",                           start:"2026-06-26",end:"2026-06-29",type:"cancelado",obs:"Cancelado"},
+  {id:8, area:"Banho Master",  name:"Limpeza e organização",                      start:"2026-06-22",end:"2026-06-22",type:"done_override",obs:"Concluído"},
+  {id:9, area:"Sala de Estar", name:"Realocação de obra de arte",                 start:"2026-06-12",end:"2026-06-15",type:"done_override",obs:"Concluído"},
+  {id:10,area:"Sala de Estar", name:"Retoque de pintura – parede (furo retirada de obras de arte)", start:"2026-06-15",end:"2026-06-19",type:"done_override",obs:"Concluído"},
+  
+  {id:29,area:"Sala de Estar", name:"Repintura do forro da galeria",                  start:"2026-06-18",end:"2026-06-26",type:"done_override",obs:"Concluído"},
+  {id:11,area:"Cobertura SPA", name:"Término dos acabamentos – cobertura",        start:"2026-06-15",end:"2026-06-19",type:"done_override",obs:"Concluído · Fechamento lateral ✅ · Troca dos LEDs ✅"},
+  {id:24,area:"Cobertura SPA", name:"Adequação da tubulação de captação de água pluvial",start:"2026-06-22",end:"2026-06-26",type:"normal",obs:"⚠️ Pendente"},
+  {id:12,area:"Deck / SPA",    name:"Tratamento do deck do SPA",                  start:"2026-07-02",end:"2026-07-03",type:"normal",obs:""},
+  {id:13,area:"Terraço",       name:"Furo na janela de vidro",                    start:"2026-06-19",end:"2026-06-19",type:"cancelado",obs:"Cancelado · Indicado puxador de madeira"},
+  {id:14,area:"Terraço",       name:"Instalação de prateleira de madeira",        start:"2026-06-26",end:"2026-06-26",type:"done_override",obs:"Concluído"},
+  {id:15,area:"Terraço",       name:"Embutir toldo do terraço",                   start:"2026-06-24",end:"2026-06-24",type:"done_override",obs:"Concluído"},
+  {id:16,area:"Terraço",       name:"Tratamento do deck do terraço",              start:"2026-06-24",end:"2026-06-26",type:"done_override",obs:"Concluído"},
+  {id:17,area:"Sala de Jantar",name:"Reparo da porta (serviço externo)",          start:"2026-06-12",end:"2026-06-23",type:"done_override",obs:"Concluído"},
+  {id:18,area:"Automação",     name:"Revisão geral da automação",                 start:"2026-06-24",end:"2026-06-24",type:"done_override",obs:"Concluído"},
+  {id:19,area:"Jacuzzi",       name:"Readequação hidráulica da jacuzzi",          start:"2026-06-22",end:"2026-06-25",type:"normal",obs:""},
+  {id:20,area:"Maçanetas",     name:"Pintura de maçanetas (serviço externo)",     start:"2026-06-12",end:"2026-07-01",type:"ext",   obs:"Retirada 12/06 · retorno 01/07"},
+  {id:21,area:"Escada de Emergência",name:"Limpeza do piso da escada",           start:"2026-07-02",end:"2026-07-03",type:"normal",obs:""},
+  {id:23,area:"Lavanderia",    name:"Conserto da torneira da lavanderia",         start:"2026-06-12",end:"2026-06-12",type:"done_override",obs:"Concluído"},
+  {id:25,area:"Banho Kids",    name:"Instalação da torneira do banho kids",          start:"2026-06-18",end:"2026-06-18",type:"done_override",obs:"Concluído"},
+  {id:26,area:"Escritório",   name:"Conserto do pé da mesinha",                     start:"2026-06-24",end:"2026-06-24",type:"done_override",obs:"Concluído"},
+  {id:30,area:"Suíte Kids",    name:"Reparo da arandela – garantia Lumini",           start:"2026-06-19",end:"2026-06-19",type:"done_override",obs:"Concluído · Garantia Lumini"},
+];
+
+let custos=[];
+
+const today=new Date(2026,6,3);
+function pD(s){const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);}
+function fD(dt){return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});}
+function fDL(dt){return dt.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});}
+function fR(v){return new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(v);}
+
+function getStatus(t){
+  if(t.type==='cancelado')return'cancelado';
+  if(t.type==='done_override')return'done';
+  if(t.type==='prog_override')return'prog';
+  const s=pD(t.start),e=pD(t.end);
+  if(today>e)return'done';
+  if(today>=s&&today<=e)return'prog';
+  return'wait';
+}
+function getPct(t){
+  if(t.type==='done_override')return 100;
+  if(t.type==='cancelado')return 0;
+  if(t.type==='prog_override'&&t.obs&&t.obs.includes('80%'))return 80;
+  if(t.type==='prog_override'&&t.obs&&t.obs.includes('50%'))return 50;
+  if(t.type==='prog_override'&&t.obs&&t.obs.includes('20%'))return 20;
+  if(t.obs&&t.obs.includes('80%'))return 80;
+  if(t.obs&&t.obs.includes('50%'))return 50;
+  if(t.obs&&t.obs.includes('20%'))return 20;
+  const s=pD(t.start),e=pD(t.end);
+  if(today>e)return 100;if(today<s)return 0;
+  const tot=(e-s)/864e5+1,el=(today-s)/864e5+1;
+  return Math.round(Math.min(el/tot,1)*100);
+}
+
+document.getElementById('footer-data').textContent='Atualizado em '+fDL(today)+' · Obra: Serviços de Manutenção – Ana Diniz';
+
+const statusInfo={
+  cancelado:{icone:'🚫',cls:'icone-wait',txtCls:'status-wait',lbl:'Cancelado',barCls:'#ccc',barFill:'#ddd'},
+  done:{icone:'✅',cls:'icone-done',txtCls:'status-done',lbl:'Concluído',barCls:'#1a7a4a',barFill:'#1a7a4a'},
+  prog:{icone:'🔄',cls:'icone-prog',txtCls:'status-prog',lbl:'Em andamento',barCls:'#e07800',barFill:'#e07800'},
+  wait:{icone:'⏳',cls:'icone-wait',txtCls:'status-wait',lbl:'Aguardando início',barCls:'#ccc',barFill:'#ccc'},
+  ext: {icone:'🔧',cls:'icone-ext',txtCls:'status-ext',lbl:'Externo',barCls:'#9090c8',barFill:'#9090c8'},
+};
+
+function renderCards(filtro){
+  const wrap=document.getElementById('cards-wrap');wrap.innerHTML='';
+  const areas=[...new Set(tasks.map(t=>t.area))];
+  areas.forEach(area=>{
+    const ats=tasks.filter(t=>t.area===area);
+    let algumVisivel=false;
+    const secao=document.createElement('div');
+    const tit=document.createElement('div');tit.className='area-titulo';tit.textContent=area;secao.appendChild(tit);
+    ats.forEach(task=>{
+      const st=getStatus(task),sk=task.type==='ext'?'ext':st,pct=getPct(task);
+      const visivel=filtro==='all'||filtro===sk;
+      const info=statusInfo[sk];
+      const s=pD(task.start),e=pD(task.end);
+      const dr=s.getTime()===e.getTime()?fD(s):`${fD(s)} → ${fD(e)}`;
+      const card=document.createElement('div');
+      card.className='card'+(st==='done'?' done':'')+(visivel?'':' hidden');
+      card.innerHTML=`
+        <div class="card-topo">
+          <div class="status-icone ${info.cls}">${info.icone}</div>
+          <div class="card-info">
+            <div class="card-nome">${task.name}</div>
+            <div class="card-status ${info.txtCls}">${info.lbl}</div>
+          </div>
+        </div>
+        <div class="card-datas">📅 ${dr}</div>
+        ${task.obs?`<div class="card-obs">ℹ️ ${task.obs}</div>`:''}
+        <div class="prog-linha"><div class="prog-linha-fill" style="width:${pct}%;background:${info.barFill}"></div></div>
+        <div class="prog-pct">${pct}% concluído</div>`;
+      secao.appendChild(card);
+      if(visivel)algumVisivel=true;
+    });
+    if(algumVisivel||filtro==='all')wrap.appendChild(secao);
+  });
+}
+
+function filtrar(f,btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderCards(f);
+}
+
+function updateResumo(){
+  let done=0,prog=0,wait=0;
+  tasks.forEach(t=>{const s=getStatus(t);if(s==='done')done++;else if(s==='prog')prog++;else wait++;});
+  document.getElementById('done-t').textContent=done;
+  document.getElementById('prog-t').textContent=prog;
+  document.getElementById('wait-t').textContent=wait;
+  const pct=Math.round((done/tasks.length)*100);
+  document.getElementById('pct-txt').textContent=pct+'%';
+  document.getElementById('barra').style.width=pct+'%';
+}
+
+function renderGantt(){
+  const s0=new Date(2026,5,12),e0=new Date(2026,6,3);
+  const days=[];
+  let cur=new Date(s0);
+  while(cur<=e0){if(cur.getDay()!==0&&cur.getDay()!==6)days.push(new Date(cur));cur.setDate(cur.getDate()+1);}
+  const g=document.getElementById('gantt');
+  const junD=days.filter(d=>d.getMonth()===5).length,julD=days.filter(d=>d.getMonth()===6).length;
+  const mr=document.createElement('div');mr.className='gantt-mes-row';
+  const mj=document.createElement('div');mj.className='gantt-mes';mj.style.flex=junD;mj.textContent='── Junho ──';mr.appendChild(mj);
+  if(julD>0){const ml=document.createElement('div');ml.className='gantt-mes';ml.style.flex=julD;ml.textContent='── Julho ──';mr.appendChild(ml);}
+  g.appendChild(mr);
+  const dr=document.createElement('div');dr.className='gantt-dia-row';
+  days.forEach(d=>{const c=document.createElement('div');c.className='gantt-dia'+(d.toDateString()===today.toDateString()?' hoje':'');c.textContent=d.getDate();dr.appendChild(c);});
+  g.appendChild(dr);
+  const areas=[...new Set(tasks.map(t=>t.area))];
+  areas.forEach(area=>{
+    const sep=document.createElement('div');sep.className='gantt-area-sep';
+    const l=document.createElement('div');l.className='gantt-area-sep-line';sep.appendChild(l);g.appendChild(sep);
+    tasks.filter(t=>t.area===area).forEach(task=>{
+      const row=document.createElement('div');row.className='gantt-task-row';
+      const lbl=document.createElement('div');lbl.className='gantt-task-lbl';lbl.title=task.name;lbl.textContent=task.name;row.appendChild(lbl);
+      const cells=document.createElement('div');cells.className='gantt-cells';
+      const ts=pD(task.start),te=pD(task.end),st=getStatus(task);
+      const bc=task.type==='ext'?'g-ext':{done:'g-done',prog:'g-prog',wait:'g-wait'}[st];
+      days.forEach(d=>{
+        const c=document.createElement('div');
+        const inB=d>=ts&&d<=te;
+        c.className='gcell'+(inB?' '+bc:'')+(d.toDateString()===today.toDateString()&&inB?' g-hoje':'');
+        cells.appendChild(c);
+      });
+      row.appendChild(cells);g.appendChild(row);
+    });
+  });
+}
+
+function showTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  btn.classList.add('active');
+  if(tab==='custos')renderCustos();
+}
+
+function toggleForm(){
+  const f=document.getElementById('form-custo');
+  f.classList.toggle('open');
+}
+
+const catCores={material:'#1a5a9a','mao-de-obra':'#1a7a4a',aluguel:'#8a4800',externo:'#5a5a9a',outro:'#888'};
+const catNomes={material:'Material','mao-de-obra':'Mão de obra',aluguel:'Aluguel/Equip.',externo:'Serv. externo',outro:'Outro'};
+
+function salvarCusto(){
+  const desc=document.getElementById('f-desc').value.trim();
+  const val=parseFloat(document.getElementById('f-val').value);
+  const cat=document.getElementById('f-cat').value;
+  const area=document.getElementById('f-area').value;
+  const data=document.getElementById('f-data').value;
+  const ref=document.getElementById('f-ref').value.trim();
+  if(!desc||isNaN(val)||val<=0){alert('Preencha a descrição e o valor.');return;}
+  custos.push({id:Date.now(),desc,val,cat,area,data,ref});
+  document.getElementById('f-desc').value='';
+  document.getElementById('f-val').value='';
+  document.getElementById('f-ref').value='';
+  document.getElementById('form-custo').classList.remove('open');
+  renderCustos();
+}
+
+function deletarCusto(id){
+  if(!confirm('Remover este lançamento?'))return;
+  custos=custos.filter(c=>c.id!==id);
+  renderCustos();
+}
+
+function renderCustos(){
+  const total=custos.reduce((a,c)=>a+c.val,0);
+  const mat=custos.filter(c=>c.cat==='material').reduce((a,c)=>a+c.val,0);
+  const mao=custos.filter(c=>c.cat==='mao-de-obra').reduce((a,c)=>a+c.val,0);
+  document.getElementById('cs-total').textContent=fR(total);
+  document.getElementById('cs-mat').textContent=fR(mat);
+  document.getElementById('cs-mao').textContent=fR(mao);
+  const lista=document.getElementById('custo-lista');lista.innerHTML='';
+  if(custos.length===0){lista.innerHTML='<div class="vazio">Nenhum custo lançado ainda.<br>Toque em "+ Lançar" para começar.</div>';return;}
+  const sorted=[...custos].sort((a,b)=>b.data.localeCompare(a.data));
+  sorted.forEach(c=>{
+    const dt=pD(c.data);
+    const div=document.createElement('div');div.className='custo-item';
+    div.innerHTML=`<div class="custo-item-topo"><div class="custo-item-desc">${c.desc}</div><div style="display:flex;align-items:center;gap:6px"><div class="custo-item-val">${fR(c.val)}</div><button class="btn-del" onclick="deletarCusto(${c.id})">×</button></div></div><div class="custo-item-meta"><span class="custo-badge" style="background:${catCores[c.cat]}22;color:${catCores[c.cat]}">${catNomes[c.cat]}</span><span>${c.area}</span><span>📅 ${fD(dt)}</span>${c.ref?`<span>🧾 ${c.ref}</span>`:''}</div>`;
+    lista.appendChild(div);
+  });
+}
+
+// Custos pré-lançados
+custos.push({id:1,desc:"Material de proteção e tinta para pintura de forro e proteção do Banho Master",val:1700,cat:"material",area:"Banho Master",data:"2026-06-12",ref:""});
+custos.push({id:2,desc:"Limpeza do piso da escada de emergência",val:6800,cat:"mao-de-obra",area:"Escada de Emergência",data:"2026-06-24",ref:""});
+
+renderCards('all');
+updateResumo();
+renderGantt();
+</script>
+</body>
+</html>
